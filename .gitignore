@@ -112,3 +112,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+Assember.py
+clean output.zip
+old output.zip
