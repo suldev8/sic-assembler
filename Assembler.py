@@ -48,6 +48,7 @@ type3 = instfile.inst.__len__()
 datax = instfile.inst.__len__() + instfile.directives.__len__()
 org_exist = False
 index = False
+programType = ''
 output = []
 endlocctr = 0
 
@@ -214,9 +215,12 @@ def sic():
 
 
 def header():
-    global lookahead, locctr, tokenval, output, endlocctr
+    global lookahead, locctr, tokenval, output, endlocctr, programType
     lookahead = lexan()
-    program = tokenval
+    programType = symtable[tokenval].string
+    print(programType)
+    match('ID')
+    programName = tokenval
 
     match('ID')
     match('START')
@@ -227,7 +231,7 @@ def header():
         print(hex(locctr))
     else:
         output.append('H')
-        output.append(symtable[program].string)
+        output.append(symtable[programName].string)
         output.append(hex(locctr))
         output.append(hex(endlocctr - locctr))
         output.append('\n')
@@ -271,28 +275,45 @@ def rest1():
     elif tokenval >= type3 and tokenval < datax:
         data()
 
+def inc_locctr(inc):
+    global locctr, org_exist
+    if org_exist:
+        locctr = inc
+    else:
+        locctr += inc
 
+def checkProgramSic():
+    global programType
+    if programType:
+        error('syntax error: sic does not work with f1 and f2')
 def stmt():
     global locctr, startLine, index, lookahead, org_exist, tokenval
 
-
     if (pass1or2 == 1):
         if org_exist == True:
-            match(lookahead)
-            locctr = tokenval
+            inc_locctr(tokenval)
             print(hex(locctr))
+            match(lookahead)
             match(lookahead)
             org_exist = False
             startLine = False
-        else:
-            locctr += symtable[tokenval].att
+        else: 
+            if(symtable[tokenval].att == 'f1'):
+                checkProgramSic()
+                inc_locctr(1)
+            elif(symtable[tokenval].att == 'f2'):
+                checkProgramSic()
+                inc_locctr(2)
+            elif(symtable[tokenval].att == 'f3'):
+                inc_locctr(3)
             print(hex(locctr))
             startLine = False
             match(lookahead)
             match('ID')
             checkindex()
+    
     if (pass1or2 == 2):
-        if org_exist == True:
+        if org_exist:
             org_exist = False
             match(lookahead)
             match(lookahead)
@@ -312,12 +333,13 @@ def stmt():
 def data():
     global locctr, tokenval
     
-    #if lookahead == 'EQU':
-     #   if pass1or2 == 1:
-      #      locctr 
+    if lookahead == 'EQU':
+        match('EQU')
+        if pass1or2 == 1:
+            inc_locctr(0) 
     if lookahead == 'WORD':
         if pass1or2 == 1:
-            locctr += symtable[tokenval].att
+            inc_locctr(symtable[tokenval].att)
             print(hex(locctr))
         match('WORD')
         if pass1or2 == 2:
@@ -329,7 +351,7 @@ def data():
         temp = symtable[tokenval].att
         match('RESW')
         if pass1or2 == 1:
-            locctr += int(temp * tokenval)
+            inc_locctr(int(temp * tokenval))
             print(hex(locctr))
         match('NUM')
 
@@ -337,7 +359,7 @@ def data():
         temp = symtable[tokenval].att
         match('RESB')
         if pass1or2 == 1:
-            locctr += int(temp * tokenval)
+            inc_locctr(int(temp * tokenval))
             print(hex(locctr))
         match('NUM')
 
@@ -350,7 +372,7 @@ def rest2():
     global locctr, tokenval
     if lookahead == 'STRING':
         if (pass1or2 == 1):
-            locctr += int(len(str(symtable[tokenval].att)) / 2)
+            inc_locctr(int(len(str(symtable[tokenval].att)) / 2))
             print(hex(locctr))
         else:
             temp = "0x" + symtable[tokenval].att
@@ -359,7 +381,7 @@ def rest2():
 
     if lookahead == 'NUM':
         if (pass1or2 == 1):
-            locctr += 1
+            inc_locctr(1)
             print(hex(locctr))
         else:
             temp = hex(tokenval)
