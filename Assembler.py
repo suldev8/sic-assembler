@@ -210,7 +210,30 @@ def checkindex():
             return True
     return False
 
+def inc_locctr(inc):
+    global locctr, org_exist
+    if org_exist:
+        locctr = inc
+    else:
+        locctr += inc
 
+def checkProgramSic():
+    global programType
+    if programType:
+        error('syntax error: sic does not work with f1 and f2')
+def checkLiterals(check):
+    global locctr
+    if (check == '='):
+        match('ID')
+        if lookahead == 'STRING':
+            insertToLittab('=C'+symtable[tokenval].string,symtable[tokenval].att,locctr)
+            match('STRING')
+        elif lookahead == 'HEX':
+            insertToLittab('=X'+symtable[tokenval].string,symtable[tokenval].att,locctr)
+            match('HEX')
+        return True
+    else:
+        return False
 # ============================== Parser starts here ==============================
 def parse():
     sic()
@@ -252,7 +275,7 @@ def header():
 
 
 def body():
-    global type3, org_exist, lookahead
+    global type3, org_exist, lookahead, locctr
 
     if lookahead == 'ID':
         match('ID')
@@ -268,7 +291,9 @@ def body():
         body()
     elif symtable[tokenval].string == 'LTORG':
         for lit in LITTAB:
-            print(lit.name)
+            print(lit.name + ' ' + lit.value)
+            inc_locctr(int(len(str(lit.value)) / 2))
+            print(hex(locctr))
         match('LTORG')
         body()
     elif lookahead == 'END':
@@ -289,30 +314,7 @@ def rest1():
     elif tokenval >= type3 and tokenval < datax:
         data()
 
-def inc_locctr(inc):
-    global locctr, org_exist
-    if org_exist:
-        locctr = inc
-    else:
-        locctr += inc
 
-def checkProgramSic():
-    global programType
-    if programType:
-        error('syntax error: sic does not work with f1 and f2')
-def checkLiterals(check):
-    global locctr
-    if (check == '='):
-        match('ID')
-        if lookahead == 'STRING':
-            insertToLittab('=C'+symtable[tokenval].string,symtable[tokenval].att,locctr)
-            match('STRING')
-        elif lookahead == 'HEX':
-            insertToLittab('=X'+symtable[tokenval].string,symtable[tokenval].att,locctr)
-            match('HEX')
-        return True
-    else:
-        return False
 def stmt():
     global locctr, startLine, index, lookahead, org_exist, tokenval
 
@@ -336,7 +338,6 @@ def stmt():
             print(hex(locctr))
             startLine = False
             match(lookahead)
-            print(symtable[tokenval].string)
             if checkLiterals(symtable[tokenval].string) == False:
                 match('ID')
                 checkindex()
