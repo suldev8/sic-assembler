@@ -8,9 +8,15 @@ class Entry:
         self.token = token
         self.att = attribute
 
+class literalsEntry:
+    def __init__(self, name, value, address):
+        self.name = name
+        self.value = value
+        self.address = address
+
 
 symtable = []
-
+LITTAB = []
 
 # print(symtable[12].string + ' ' + str(symtable[12].token) + ' ' + str(symtable[12].att))
 
@@ -26,7 +32,9 @@ def insert(s, t, a):
     symtable.append(Entry(s, t, a))
     return symtable.__len__() - 1
 
-
+def insertToLittab(n,v,a):
+    LITTAB.append(literalsEntry(n,v,a))
+    return LITTAB
 
 def init():
     for i in range(0, instfile.inst.__len__()):
@@ -47,9 +55,11 @@ startLine = True
 type3 = instfile.inst.__len__()
 datax = instfile.inst.__len__() + instfile.directives.__len__()
 org_exist = False
+
 index = False
 programType = ''
 output = []
+
 endlocctr = 0
 
 Xbit4set = 0x800000
@@ -198,7 +208,6 @@ def checkindex():
         else:
             match('REG')
             return True
-
     return False
 
 
@@ -243,7 +252,7 @@ def header():
 
 
 def body():
-    global type3, org_exist
+    global type3, org_exist, lookahead
 
     if lookahead == 'ID':
         match('ID')
@@ -256,6 +265,11 @@ def body():
     elif symtable[tokenval].string == 'ORG':
         org_exist = True
         stmt()
+        body()
+    elif symtable[tokenval].string == 'LTORG':
+        for lit in LITTAB:
+            print(lit.name)
+        match('LTORG')
         body()
     elif lookahead == 'END':
         pass
@@ -286,6 +300,19 @@ def checkProgramSic():
     global programType
     if programType:
         error('syntax error: sic does not work with f1 and f2')
+def checkLiterals(check):
+    global locctr
+    if (check == '='):
+        match('ID')
+        if lookahead == 'STRING':
+            insertToLittab('=C'+symtable[tokenval].string,symtable[tokenval].att,locctr)
+            match('STRING')
+        elif lookahead == 'HEX':
+            insertToLittab('=X'+symtable[tokenval].string,symtable[tokenval].att,locctr)
+            match('HEX')
+        return True
+    else:
+        return False
 def stmt():
     global locctr, startLine, index, lookahead, org_exist, tokenval
 
@@ -309,8 +336,10 @@ def stmt():
             print(hex(locctr))
             startLine = False
             match(lookahead)
-            match('ID')
-            checkindex()
+            print(symtable[tokenval].string)
+            if checkLiterals(symtable[tokenval].string) == False:
+                match('ID')
+                checkindex()
     
     if (pass1or2 == 2):
         if org_exist:
@@ -321,14 +350,16 @@ def stmt():
             opcode = symtable[tokenval].token
             match(lookahead)
             trap = int(symtable[tokenval].att)
-            match('ID')
-            
-            if checkindex():
-                temp = hex((int(opcode) << 16) + (trap | 0x8000))
-                print(temp)
+            if checkLiterals(symtable[tokenval].string):
+                pass
             else:
-                temp = hex((int(opcode) << 16) + trap)
-                print(temp)
+                match('ID')
+                if checkindex():
+                    temp = hex((int(opcode) << 16) + (trap | 0x8000))
+                    print(temp)
+                else:
+                    temp = hex((int(opcode) << 16) + trap)
+                    print(temp)
 
 def data():
     global locctr, tokenval
