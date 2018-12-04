@@ -273,7 +273,7 @@ def header():
         output.append('H')
         output.append(symtable[programName].string)
         output.append(f'{locctr:06x}')
-        output.append(f'{locctr - endlocctr :06x}')
+        output.append(f'{endlocctr - locctr :06x}')
         #print(' '.join(output))
         print('\nPass 2:')
 
