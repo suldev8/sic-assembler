@@ -222,7 +222,7 @@ def checkProgramSic():
     if programType:
         error('syntax error: sic does not work with f1 and f2')
 def checkLiterals(check):
-    global locctr
+    global locctr, pass1or2
     if (check == '='):
         match('ID')
         if lookahead == 'STRING':
@@ -294,11 +294,12 @@ def body():
         body()
     elif symtable[tokenval].string == 'LTORG':
         for lit in LITTAB:
-            print(lit.name + ' ' + lit.value)
-            temp = int(len(str(lit.value)) / 2)
-            inc_locctr(temp)
-            print(f'{temp:04x}')
- 
+            if pass1or2 == 1:
+                temp = int(len(str(lit.value)) / 2)
+                inc_locctr(temp)
+                print(f'{locctr:04x}')
+            elif pass1or2 == 2:
+                print(lit.value)
         match('LTORG')
         body()
     elif lookahead == 'END':
@@ -356,8 +357,11 @@ def stmt():
             opcode = symtable[tokenval].token
             match(lookahead)
             trap = int(symtable[tokenval].att)
-            if checkLiterals(symtable[tokenval].string):
-                pass
+            if symtable[tokenval].string == '=':
+                match('ID')
+                match(lookahead)
+                temp = (int(opcode) << 16) + trap
+                print(f'{temp:06x}')
             else:
                 match('ID')
                 if checkindex():
