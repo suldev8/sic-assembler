@@ -234,6 +234,9 @@ def checkLiterals(check):
         return True
     else:
         return False
+
+def printObjectCode(x):
+    print(x)
 # ============================== Parser starts here ==============================
 def parse():
     sic()
@@ -260,14 +263,14 @@ def header():
 
     if pass1or2 == 1:
         print('Pass 1:')
-        print(hex(locctr))
+        print(f'{locctr:04x}')
     else:
         output.append('H')
         output.append(symtable[programName].string)
-        output.append(hex(locctr))
-        output.append(hex(endlocctr - locctr))
+        output.append(f'{locctr:06x}')
+        output.append(f'{endlocctr - locctr:06x}')
         output.append('\n')
-        #print(' '.join(output))
+        print(' '.join(output))
         
         print('\nPass 2:')
 
@@ -321,7 +324,7 @@ def stmt():
     if (pass1or2 == 1):
         if org_exist == True:
             inc_locctr(tokenval)
-            print(hex(locctr))
+            print(f'{locctr:04x}')
             match(lookahead)
             match(lookahead)
             org_exist = False
@@ -335,7 +338,7 @@ def stmt():
                 inc_locctr(2)
             elif(symtable[tokenval].att == 'f3'):
                 inc_locctr(3)
-            print(hex(locctr))
+            print(f'{locctr:04x}')
             startLine = False
             match(lookahead)
             if checkLiterals(symtable[tokenval].string) == False:
@@ -356,11 +359,11 @@ def stmt():
             else:
                 match('ID')
                 if checkindex():
-                    temp = hex((int(opcode) << 16) + (trap | 0x8000))
-                    print(temp)
+                    temp = (int(opcode) << 16) + (trap | 0x8000)
+                    print(f'{temp:06x}')
                 else:
-                    temp = hex((int(opcode) << 16) + trap)
-                    print(temp)
+                    temp = (int(opcode) << 16) + trap
+                    print(f'{temp:06x}')
 
 def data():
     global locctr, tokenval
@@ -368,15 +371,15 @@ def data():
     if lookahead == 'EQU':
         match('EQU')
         if pass1or2 == 1:
-            inc_locctr(0) 
+            inc_locctr(0)
     if lookahead == 'WORD':
         if pass1or2 == 1:
             inc_locctr(symtable[tokenval].att)
-            print(hex(locctr))
+            print(f'{locctr:04x}')
         match('WORD')
         if pass1or2 == 2:
-            temp = hex(tokenval)
-            print(temp)
+            temp = tokenval
+            print(f'{temp:x}')
         match('NUM')
 
     if lookahead == 'RESW':
@@ -384,7 +387,7 @@ def data():
         match('RESW')
         if pass1or2 == 1:
             inc_locctr(int(temp * tokenval))
-            print(hex(locctr))
+            print(f'{locctr:04x}')
         match('NUM')
 
     if lookahead == 'RESB':
@@ -392,7 +395,7 @@ def data():
         match('RESB')
         if pass1or2 == 1:
             inc_locctr(int(temp * tokenval))
-            print(hex(locctr))
+            print(f'{locctr:04x}')
         match('NUM')
 
     if lookahead == 'BYTE':
@@ -405,19 +408,19 @@ def rest2():
     if lookahead == 'STRING':
         if (pass1or2 == 1):
             inc_locctr(int(len(str(symtable[tokenval].att)) / 2))
-            print(hex(locctr))
+            print(f'{locctr:04x}')
         else:
-            temp = "0x" + symtable[tokenval].att
+            temp = symtable[tokenval].att
             print(temp)
         match('STRING')
 
     if lookahead == 'NUM':
         if (pass1or2 == 1):
             inc_locctr(1)
-            print(hex(locctr))
+            print(f'{locctr:04x}')
         else:
-            temp = hex(tokenval)
-            print(temp)
+            temp = tokenval
+            print(f'{temp:x}')
         match('NUM')
 
 
