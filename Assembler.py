@@ -18,6 +18,7 @@ class literalsEntry:
 symtable = []
 LITTAB = []
 
+started = "E "
 # print(symtable[12].string + ' ' + str(symtable[12].token) + ' ' + str(symtable[12].att))
 
 
@@ -250,7 +251,7 @@ def sic():
 
 
 def header():
-    global lookahead, locctr, tokenval, output, endlocctr, programType
+    global lookahead, locctr, tokenval, output, endlocctr, programType, started
     lookahead = lexan()
     programType = symtable[tokenval].string
     print(programType)
@@ -260,6 +261,8 @@ def header():
     match('ID')
     match('START')
     locctr += tokenval
+    if pass1or2 == 1 :
+        started += str(f'{locctr:06x}')
 
     if pass1or2 == 1:
         print('Pass 1:')
@@ -268,9 +271,10 @@ def header():
         output.append('H')
         output.append(symtable[programName].string)
         output.append(f'{locctr:06x}')
-        output.append(f'{endlocctr - locctr:06x}')
+        output.append(f'{locctr - endlocctr :06x}')
         output.append('\n')
         print(' '.join(output))
+        print(started)
         
         print('\nPass 2:')
 
