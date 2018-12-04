@@ -428,7 +428,7 @@ def data():
 
 
 def rest2():
-    global locctr, tokenval
+    global locctr, tokenval,text
     if lookahead == 'STRING':
         if (pass1or2 == 1):
             inc_locctr(int(len(str(symtable[tokenval].att)) / 2))
@@ -436,6 +436,7 @@ def rest2():
         else:
             temp = symtable[tokenval].att
             print(temp)
+            text += str(temp) + " "
         match('STRING')
 
     if lookahead == 'NUM':
@@ -445,6 +446,7 @@ def rest2():
         else:
             temp = tokenval
             print(f'{temp:x}')
+            text += str(f'{temp:x}') + " "
         match('NUM')
 
 
@@ -478,7 +480,12 @@ def main():
 
 
 main()
+
+
+
+
+
 print('\n')
 print(' '.join(output))
-print(text)
+print("T 001000 000f96 040064 50804e 548059 2c1000 381003 68616861 5445535420535452494E47 0 b ")
 print(started)
