@@ -19,6 +19,7 @@ symtable = []
 LITTAB = []
 
 started = "E "
+text = "T "
 # print(symtable[12].string + ' ' + str(symtable[12].token) + ' ' + str(symtable[12].att))
 
 
@@ -251,7 +252,7 @@ def sic():
 
 
 def header():
-    global lookahead, locctr, tokenval, output, endlocctr, programType, started
+    global lookahead, locctr, tokenval, output, endlocctr, programType, started, text
     lookahead = lexan()
     programType = symtable[tokenval].string
     print(programType)
@@ -263,6 +264,7 @@ def header():
     locctr += tokenval
     if pass1or2 == 1 :
         started += str(f'{locctr:06x}')
+        text += str(f'{locctr:06x}') + " "
 
     if pass1or2 == 1:
         print('Pass 1:')
@@ -282,7 +284,7 @@ def header():
 
 
 def body():
-    global type3, org_exist, lookahead, locctr
+    global type3, org_exist, lookahead, locctr, text
 
     if lookahead == 'ID':
         match('ID')
@@ -304,6 +306,7 @@ def body():
                 print(f'{locctr:04x}')
             elif pass1or2 == 2:
                 print(lit.value)
+                text += str(lit.value) + " "
         match('LTORG')
         body()
     elif lookahead == 'END':
@@ -326,7 +329,7 @@ def rest1():
 
 
 def stmt():
-    global locctr, startLine, index, lookahead, org_exist, tokenval
+    global locctr, startLine, index, lookahead, org_exist, tokenval, text
 
     if (pass1or2 == 1):
         if org_exist == True:
@@ -366,17 +369,20 @@ def stmt():
                 match(lookahead)
                 temp = (int(opcode) << 16) + trap
                 print(f'{temp:06x}')
+                text +=str(f'{temp:06x}') + " "
             else:
                 match('ID')
                 if checkindex():
                     temp = (int(opcode) << 16) + (trap | 0x8000)
                     print(f'{temp:06x}')
+                    text += str(f'{temp:06x}') + " "
                 else:
                     temp = (int(opcode) << 16) + trap
                     print(f'{temp:06x}')
+                    text += str(f'{temp:06x}') + " "
 
 def data():
-    global locctr, tokenval
+    global locctr, tokenval, text
 
     if lookahead == 'EQU':
         preEQU = tokenval
@@ -400,6 +406,7 @@ def data():
         if pass1or2 == 2:
             temp = tokenval
             print(f'{temp:x}')
+            text += str(f'{temp:x}') + " "
         match('NUM')
 
     if lookahead == 'RESW':
@@ -474,3 +481,4 @@ def main():
 
 
 main()
+print(text)
