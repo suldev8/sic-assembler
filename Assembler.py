@@ -295,8 +295,10 @@ def body():
     elif symtable[tokenval].string == 'LTORG':
         for lit in LITTAB:
             print(lit.name + ' ' + lit.value)
-            inc_locctr(int(len(str(lit.value)) / 2))
-            print(hex(locctr))
+            temp = int(len(str(lit.value)) / 2)
+            inc_locctr(temp)
+            print(f'{temp:04x}')
+ 
         match('LTORG')
         body()
     elif lookahead == 'END':
@@ -367,11 +369,21 @@ def stmt():
 
 def data():
     global locctr, tokenval
-    
+
     if lookahead == 'EQU':
+        preEQU = tokenval
         match('EQU')
         if pass1or2 == 1:
-            inc_locctr(0)
+            if lookahead == 'NUM':
+                symtable[preEQU].att = tokenval
+            if lookahead == 'ID':
+                if(symtable[tokenval].string == '*'):
+                    symtable[preEQU].att = locctr
+                else:    
+                    symtable[preEQU].att = symtable[tokenval].att
+                
+            print('EQU', f'{symtable[preEQU].att:04x}')
+        match(lookahead)
     if lookahead == 'WORD':
         if pass1or2 == 1:
             inc_locctr(symtable[tokenval].att)
