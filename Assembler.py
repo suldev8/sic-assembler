@@ -274,10 +274,7 @@ def header():
         output.append(symtable[programName].string)
         output.append(f'{locctr:06x}')
         output.append(f'{locctr - endlocctr :06x}')
-        output.append('\n')
-        print(' '.join(output))
-        print(started)
-        
+        #print(' '.join(output))
         print('\nPass 2:')
 
     match('NUM')
@@ -481,4 +478,7 @@ def main():
 
 
 main()
+print('\n')
+print(' '.join(output))
 print(text)
+print(started)
