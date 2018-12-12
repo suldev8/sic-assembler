@@ -327,7 +327,7 @@ def rest1():
 
 def stmt():
     global locctr, startLine, index, lookahead, org_exist, tokenval, text
-
+    mult = False
     if (pass1or2 == 1):
         if org_exist == True:
             inc_locctr(tokenval)
@@ -345,12 +345,24 @@ def stmt():
                 inc_locctr(2)
             elif(symtable[tokenval].att == 'f3'):
                 inc_locctr(3)
+                if symtable[tokenval].string == 'MULT':
+                    mult = True
             print(f'{locctr:04x}')
             startLine = False
             match(lookahead)
             if checkLiterals(symtable[tokenval].string) == False:
-                match('ID')
-                checkindex()
+                if mult == True:
+                    if lookahead == 'REG':
+                        match('REG')
+                        match(',')
+                        match('ID')
+                    elif lookahead == 'ID':
+                        match('ID')
+                        match(',')
+                        match('REG')
+                else:
+                    match('ID')
+                    checkindex()
     
     if (pass1or2 == 2):
         if org_exist:
@@ -359,24 +371,45 @@ def stmt():
             match(lookahead)
         else:
             opcode = symtable[tokenval].token
+            if symtable[tokenval].string == 'MULT':
+                mult = True
             match(lookahead)
-            trap = int(symtable[tokenval].att)
             if symtable[tokenval].string == '=':
+                trap = int(symtable[tokenval].att)
                 match('ID')
                 match(lookahead)
                 temp = (int(opcode) << 16) + trap
                 print(f'{temp:06x}')
                 text +=str(f'{temp:06x}') + " "
             else:
-                match('ID')
-                if checkindex():
-                    temp = (int(opcode) << 16) + (trap | 0x8000)
-                    print(f'{temp:06x}')
-                    text += str(f'{temp:06x}') + " "
+                if mult == True:
+                    if lookahead == 'REG':
+                        trap = int(symtable[tokenval].att)
+                        match('REG')
+                        match(',')
+                        match('ID')
+                        temp = (int(opcode) << 16) + (trap | 0x8000)
+                        print(f'{temp:06x}')
+                        text += str(f'{temp:06x}') + " "
+                    elif lookahead == 'ID':
+                        match('ID')
+                        match(',')
+                        trap = int(symtable[tokenval].att)
+                        match('REG')
+                        temp = (int(opcode) << 16) + (trap | 0x8000)
+                        print(f'{temp:06x}')
+                        text += str(f'{temp:06x}') + " "
                 else:
-                    temp = (int(opcode) << 16) + trap
-                    print(f'{temp:06x}')
-                    text += str(f'{temp:06x}') + " "
+                    trap = int(symtable[tokenval].att)
+                    match('ID')
+                    if checkindex():
+                        temp = (int(opcode) << 16) + (trap | 0x8000)
+                        print(f'{temp:06x}')
+                        text += str(f'{temp:06x}') + " "
+                    else:
+                        temp = (int(opcode) << 16) + trap
+                        print(f'{temp:06x}')
+                        text += str(f'{temp:06x}') + " "
 
 def data():
     global locctr, tokenval, text
@@ -402,8 +435,8 @@ def data():
         match('WORD')
         if pass1or2 == 2:
             temp = tokenval
-            print(f'{temp:x}')
-            text += str(f'{temp:x}') + " "
+            print(f'{temp:06x}')
+            text += str(f'{temp:06x}') + " "
         match('NUM')
 
     if lookahead == 'RESW':
@@ -412,8 +445,14 @@ def data():
         if pass1or2 == 1:
             inc_locctr(int(temp * tokenval))
             print(f'{locctr:04x}')
+        else:
+            temp = 0
+            i = 0
+            while i < tokenval:
+                print(f'{temp:06x}')
+                text += str(f'{temp:06x}') + " "
+                i += 1
         match('NUM')
-
     if lookahead == 'RESB':
         temp = symtable[tokenval].att
         match('RESB')
